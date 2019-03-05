@@ -19,9 +19,10 @@ def main(net):
 	spm = SpanningTreeMessage(id, hops_to_root=0)
 
 	Ethernet.add_next_header_class(EtherType.SLOW, SpanningTreeMessage)
-	pkt = Ethernet(src= "20:00:00:00:00:01",#"98:78:65:37:26:54" 
-   	            dst= "ff:ff:ff:ff:ff:ff", #"34:52:76:71:16:09",
-   	            ethertype=EtherType.SLOW) + spm
+
+	pkt = Ethernet(src= id, 
+       				dst= "ff:ff:ff:ff:ff:ff",
+   	      		ethertype=EtherType.SLOW) + spm
  
 	def send_stp(pkt):
 		while id == min(mymacs):
@@ -29,6 +30,7 @@ def main(net):
 				net.send_packet(intf.name, pkt)
 			time.sleep(2)
 
+	
 	start_new_thread(send_stp(pkt))
 	
 	while True:
