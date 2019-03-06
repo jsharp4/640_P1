@@ -1,6 +1,7 @@
 from switchyard.lib.userlib import *
 from spanningtreemessage import SpanningTreeMessage
 from _thread import start_new_thread
+import threading
 import time
 
 def main(net):
@@ -27,11 +28,12 @@ def main(net):
 	def send_stp(pkt):
 		while id == min(mymacs):
 			for intf in my_interfaces:
+				log_debug ("Flooding packet {} to {}".format(pkt, intf.name))
 				net.send_packet(intf.name, pkt)
 			time.sleep(2)
 
 	
-	start_new_thread(send_stp(pkt))
+	threading.Thread(group=None, target=send_stp, name=None, args=(pkt,)).start()
 	
 	while True:
 		try:
