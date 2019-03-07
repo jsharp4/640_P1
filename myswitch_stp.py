@@ -7,10 +7,13 @@ import time
 def main(net):
 	my_interfaces = net.interfaces() 
 	mymacs = [intf.ethaddr for intf in my_interfaces]
+	fwd_table = []
 	fwd_mode = {}
 
-	for mac in mymacs:
-		fwd_mode[mac] = 1
+	for intf in my_interfaces:
+		fwd_mode[intf.name] = 1
+		log_info(intf.name)
+	
 
 	#stp packet id
 	id = min(mymacs)
@@ -56,12 +59,13 @@ def main(net):
 				id = stp_in.root
 				root_port = input_port
 				hops = stp_in.hops_to_root + 1
-				stp_in.hops_to_root = hops
+
+				new_pkt = mk_stp_pkt(id, hops)
 
 				for intf in my_interfaces:
 					if input_port != intf.name:
-						log_debug ("Flooding packet {} to {}".format(packet, intf.name))
-						net.send_packet(intf.name, packet)
+						log_debug ("Flooding packet {} to {}".format(new_pkt, intf.name))
+						net.send_packet(intf.name, new_pkt)
 				fwd_mode[input_port] = 1
 			
 			elif stp_in.root == id and stp_in.hops_to_root + 1 == hops and input_port != root_port:
@@ -92,7 +96,9 @@ def main(net):
 						net.send_packet(send_port, packet)   
 					else:
 						for intf in my_interfaces:
-							if input_port != intf.name and fwd_mode[input_port] == 1:
+							for mode in fwd_mode:
+								log_info(mode + " " + str(fwd_mode[mode]))
+							if input_port != intf.name and fwd_mode[intf.name] == 1:
 								log_debug ("Flooding packet {} to {}".format(packet, intf.name))
 								net.send_packet(intf.name, packet)
 
